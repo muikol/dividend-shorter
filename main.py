@@ -113,7 +113,6 @@ def export_screener(df: pd.DataFrame) -> None:
             "Last Close": "Close",
             "dividend_Rate": "Divid Rate",
             "roc_5_pos": "5_Days_pos",
-            "above_SMA_50": "MA50",
         },
         inplace=True,
     )
@@ -130,7 +129,7 @@ def export_screener(df: pd.DataFrame) -> None:
                 "Close",
                 "Divid Rate",
                 "5_Days_pos",
-                "MA50",
+                "above_SMA_50",
                 "etf",
                 "adr",
                 "bond",
@@ -147,7 +146,7 @@ def export_screener(df: pd.DataFrame) -> None:
             "Close",
             "Divid Rate",
             "5_Days_pos",
-            "MA50",
+            "above_SMA_50",
             "etf",
             "adr",
             "bond",
@@ -173,22 +172,21 @@ def update_stock_data(df: pd.DataFrame) -> pd.DataFrame:
     df["SMA_50"] = 0.0
 
     for index, row in df.iterrows():
-        ticker = yf.Ticker(row.symbol.replace(".", "-"))
-        hist = ticker.history()
+        hist = yf.download(row.symbol.replace(".", "-"), progress=False)
 
         if hist.empty or len(hist) < 6:
             continue  # Skip symbols with not enough data
 
-        df.at[index, "Close"] = round(hist["Close"].iloc[-1],2)
-        df.at[index, "Volume"] = round(hist["Volume"].iloc[-1])
-        df.at[index, "SMA_50"] = round(hist["Close"].rolling(50).mean().iloc[-1],2)
+        df.at[index, "Close"] = round(hist.Close.iloc[-1], 2)
+        df.at[index, "Volume"] = round(hist.Volume.iloc[-1])
+        df.at[index, "SMA_50"] = round(hist.Close.rolling(50).mean().iloc[-1], 2)
         df.at[index, "dividend_percentage"] = round(
-            (row.dividend_Rate / hist["Close"].iloc[-1]) * 100, 2
+            (row.dividend_Rate / hist.Close.iloc[-1]) * 100, 2
         )
         df.at[index, "last_close_volume"] = round(
-            hist["Close"].iloc[-1] * hist["Volume"].iloc[-1]
+            hist.Close.iloc[-1] * hist.Volume.iloc[-1]
         )
-        df.at[index, "close_5_days_ago"] = hist["Close"].iloc[-5]
+        df.at[index, "close_5_days_ago"] = hist.Close.iloc[-5]
 
     df["roc_5_pos"] = df["Close"] > df["close_5_days_ago"]
     df["above_SMA_50"] = df["Close"] > df["SMA_50"]
