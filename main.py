@@ -101,6 +101,10 @@ def export_screener(df: pd.DataFrame) -> None:
     Parameters:
     df (pd.DataFrame): The DataFrame containing the screener data.
     """
+
+    pd.options.display.float_format = "{:.2f}".format
+    df.Volume = df.Volume.astype(int)
+
     df.rename(
         columns={
             "symbol": "Ticker",
@@ -202,7 +206,7 @@ def main() -> None:
     today = datetime.now()
 
     df = get_dividend_days(
-        start_date=(today - timedelta(days=1)).date(),
+        start_date=(today).date(),
         end_date=add_business_days(today, 10).date(),
     )
     df = update_stock_data(df)
