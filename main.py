@@ -179,9 +179,9 @@ def update_stock_data(df: pd.DataFrame) -> pd.DataFrame:
         if hist.empty or len(hist) < 6:
             continue  # Skip symbols with not enough data
 
-        df.at[index, "Close"] = hist["Close"].iloc[-1]
-        df.at[index, "Volume"] = hist["Volume"].iloc[-1]
-        df.at[index, "SMA_50"] = hist["Close"].rolling(50).mean().iloc[-1]
+        df.at[index, "Close"] = round(hist["Close"].iloc[-1],2)
+        df.at[index, "Volume"] = round(hist["Volume"].iloc[-1])
+        df.at[index, "SMA_50"] = round(hist["Close"].rolling(50).mean().iloc[-1],2)
         df.at[index, "dividend_percentage"] = round(
             (row.dividend_Rate / hist["Close"].iloc[-1]) * 100, 2
         )
